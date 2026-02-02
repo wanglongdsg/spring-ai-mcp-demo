@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: spring-ai-mcp-demo
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   datasource:
     url: jdbc:mysql://192.168.6.101:3306/uni_ai_robot?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
     username: root
@@ -16,7 +18,8 @@ spring:
     show-sql: false
   ai:
     deepseek:
-      api-key: ${DEEPSEEK_API_KEY:sk-b5ba4f6938ab440d823f71459fc79a24}
+      # 从环境变量 DEEPSEEK_API_KEY 读取，不写默认值避免提交到仓库。本地可设环境变量或使用 application-local.yml（见 application-local.yml）
+      api-key: ${DEEPSEEK_API_KEY:}
       chat:
         options:
           model: deepseek-chat

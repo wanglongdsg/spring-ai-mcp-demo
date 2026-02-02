@@ -341,10 +341,10 @@ public ToolCallbackProvider incidentTools(IncidentToolService service) {
 
 ### 8.1 配置 API Key
 
-DeepSeek 聊天接口需要 API Key，任选其一：
+DeepSeek 聊天接口需要 API Key，任选其一（**密钥不会提交到 Git**）：
 
-- **环境变量**（推荐）：`DEEPSEEK_API_KEY=sk-xxx`，再启动应用。
-- **application.yml**：`spring.ai.deepseek.api-key: sk-xxx`（勿提交到仓库）。
+- **环境变量**（推荐）：启动前设置 `DEEPSEEK_API_KEY=sk-xxx`（PowerShell: `$env:DEEPSEEK_API_KEY="sk-xxx"`），再启动应用。
+- **本地配置文件**：复制 `src/main/resources/application-local.example.yml` 为 `application-local.yml`，填入 API Key，启动时加 `-Dspring.profiles.active=local`。`application-local.yml` 已加入 `.gitignore`，不会提交。
 
 未配置时，调用 `/api/chat` 会因调用 DeepSeek 失败而报错。
 
