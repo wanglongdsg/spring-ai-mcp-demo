@@ -1,7 +1,5 @@
 /.idea/
-/target/
-
-# 本地密钥与配置，勿提交
+/target/# 本地密钥与配置，勿提交
 application-local.yml
 application-local.yaml
 src/main/resources/application-local.yml

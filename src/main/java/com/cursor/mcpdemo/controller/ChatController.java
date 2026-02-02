@@ -29,6 +29,7 @@ public class ChatController {
     }
 
 
+
     /**
      * 对话接口：发送一句自然语言，DeepSeek 会按需调用“插入数据 / 查询列表”等工具，并返回回复。
      * 响应为 JSON：{ "success": true, "reply": "...", "message": "ok", "table": "data_record" }（table 在涉及表操作时返回）
