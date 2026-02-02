@@ -1,0 +1,271 @@
+{
+  "info": {
+    "name": "Spring AI MCP Demo",
+    "description": "本地 MCP 服务 (端口 8090) 的 Postman 测试集合。\n\n- **Actuator**: 健康检查、信息、指标\n- **MCP JSON-RPC**: initialize → tools/list → tools/call\n\n说明：MCP 默认使用 SSE 传输，若 POST /mcp 返回 404，请确认服务是否启用了 Streamable-HTTP 或 Stateless，或在 application.yml 中配置对应端点。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8090" },
+    { "key": "mcp_request_id", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Actuator",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/actuator/health",
+            "description": "健康检查"
+          }
+        },
+        {
+          "name": "Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/actuator/info",
+            "description": "应用信息"
+          }
+        },
+        {
+          "name": "Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/actuator/metrics",
+            "description": "指标列表"
+          }
+        },
+        {
+          "name": "Prometheus",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/actuator/prometheus",
+            "description": "Prometheus 格式指标"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MCP JSON-RPC",
+      "item": [
+        {
+          "name": "Initialize",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-11-25\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"postman\",\n      \"version\": \"1.0\"\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "MCP 初始化，获取服务端能力。若 404 请用下方「Initialize (alt /mcp/message)」或配置 spring.ai.mcp.server.protocol=STREAMABLE。"
+          }
+        },
+        {
+          "name": "Initialize (alt /mcp/message)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 1,\n  \"method\": \"initialize\",\n  \"params\": {\n    \"protocolVersion\": \"2025-11-25\",\n    \"capabilities\": {},\n    \"clientInfo\": {\n      \"name\": \"postman\",\n      \"version\": \"1.0\"\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp/message",
+            "description": "若 /mcp 返回 404，用此请求尝试 /mcp/message。"
+          }
+        },
+        {
+          "name": "tools/list",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 2,\n  \"method\": \"tools/list\"\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "列出所有 MCP 工具"
+          }
+        },
+        {
+          "name": "tools/call - createIncident",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 3,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"createIncident\",\n    \"arguments\": {\n      \"title\": \"API 延迟飙升\",\n      \"description\": \"核心 API 95% 响应超过 2s\",\n      \"severity\": \"高\",\n      \"tags\": [\"api\", \"latency\"],\n      \"createdBy\": \"oncall\",\n      \"slaMinutes\": 60,\n      \"metadata\": {\n        \"service\": \"gateway\",\n        \"region\": \"ap-sg\"\n      }\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "创建事件，返回结果中的 incidentId 可用于后续 getIncident、updateIncidentStatus 等"
+          }
+        },
+        {
+          "name": "tools/call - listIncidents",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 4,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"listIncidents\",\n    \"arguments\": {\n      \"limit\": 10\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "按条件列出事件（可传 status、severity、assignee、tag、limit）"
+          }
+        },
+        {
+          "name": "tools/call - getIncident",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 5,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"getIncident\",\n    \"arguments\": {\n      \"incidentId\": \"INC-0001-xxx\"\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "获取事件详情。请将 incidentId 替换为 createIncident 返回的 ID"
+          }
+        },
+        {
+          "name": "tools/call - updateIncidentStatus",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 6,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"updateIncidentStatus\",\n    \"arguments\": {\n      \"incidentId\": \"INC-0001-xxx\",\n      \"status\": \"处理中\",\n      \"actor\": \"sre-lee\",\n      \"note\": \"启用缓存降级\"\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "更新事件状态。请将 incidentId 替换为实际 ID"
+          }
+        },
+        {
+          "name": "tools/call - listRunbooks",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 7,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"listRunbooks\",\n    \"arguments\": {}\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "列出运行手册"
+          }
+        },
+        {
+          "name": "tools/call - recommendRunbookForIncident",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 8,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"recommendRunbookForIncident\",\n    \"arguments\": {\n      \"incidentId\": \"INC-0001-xxx\"\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "为事件推荐运行手册。请将 incidentId 替换为实际 ID"
+          }
+        },
+        {
+          "name": "tools/call - incidentStats",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 9,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"incidentStats\",\n    \"arguments\": {}\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "事件概览统计"
+          }
+        },
+        {
+          "name": "tools/call - insertData（往表插入数据）",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 10,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"insertData\",\n    \"arguments\": {\n      \"title\": \"今日待办\",\n      \"content\": \"完成 MCP 文档、联调 DeepSeek\"\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "往 data_record 表插入一条数据"
+          }
+        },
+        {
+          "name": "tools/call - listData（查表数据列表）",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "text/event-stream, application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jsonrpc\": \"2.0\",\n  \"id\": 11,\n  \"method\": \"tools/call\",\n  \"params\": {\n    \"name\": \"listData\",\n    \"arguments\": {\n      \"limit\": 10\n    }\n  }\n}\n"
+            },
+            "url": "{{base_url}}/mcp",
+            "description": "查询 data_record 表最近插入的数据"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DeepSeek 聊天（往表插入数据）",
+      "item": [
+        {
+          "name": "POST /api/chat",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"帮我在表里插一条数据，标题是：今日待办，内容是：完成 MCP 文档\"\n}\n"
+            },
+            "url": "{{base_url}}/api/chat",
+            "description": "用自然语言让 DeepSeek 调用 insertData 写入 data_record 表。需配置 DEEPSEEK_API_KEY。"
+          }
+        }
+      ]
+    }
+  ]
+}

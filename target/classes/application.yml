@@ -1,0 +1,34 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: spring-ai-mcp-demo
+  datasource:
+    url: jdbc:mysql://192.168.6.101:3306/uni_ai_robot?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=GMT%2B8
+    username: root
+    password: PV8NQ@RSkVHZ
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: false
+  ai:
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:sk-b5ba4f6938ab440d823f71459fc79a24}
+      chat:
+        options:
+          model: deepseek-chat
+    mcp:
+      server:
+        name: incident-mcp-demo
+        version: 0.1.0
+        # STATELESS：无会话，每个请求独立，适合 Postman 单次请求测试（无需 Session ID）
+        protocol: STATELESS
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,prometheus"
